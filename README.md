@@ -2,7 +2,7 @@
 
 <img src="https://avatars.githubusercontent.com/u/172988251?s=200&v=4" width="100" style="border-radius:16px"/>
 
-# 🐛 WormBot
+#  WormBot
 
 **A sharp, direct AI chatbot powered by Google Gemini**  
 Built with Node.js · Express · Vanilla JS
