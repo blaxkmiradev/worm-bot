@@ -38,7 +38,7 @@
     a:hover { text-decoration: underline; }
 
     /* ── LAYOUT ── */
-    .layout { display: flex; min-height: 100vh; position: relative; overflow-x: hidden; }
+    .layout { display: flex; min-height: 100vh; position: relative; }
 
     /* ── SIDEBAR ── */
     .sidebar {
@@ -177,7 +177,7 @@
     .back-link:hover { color: var(--accent); background: var(--card); text-decoration: none; }
 
     /* ── MAIN CONTENT ── */
-    .main { flex: 1; padding: 48px 56px; max-width: 900px; }
+    .main { flex: 1; margin: 0 auto; padding: 48px 56px; width: 100%; max-width: 900px; }
 
     /* Hero */
     .hero {
@@ -1009,8 +1009,9 @@ curl -O http://localhost:3000/files/hello.txt</code></pre>
       </a>
     </div>
 
-</div> <!-- End main wrap -->
-</div>
+  </main>
+</div> <!-- End flex wrapper -->
+</div> <!-- End .layout -->
 
 <script>
   // Mobile Sidebar
