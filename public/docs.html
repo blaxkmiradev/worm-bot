@@ -1,0 +1,984 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>WormBot API Docs</title>
+  <meta name="description" content="WormBot REST API documentation for developers."/>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:       #080808;
+      --surface:  #0f0000;
+      --card:     #150000;
+      --border:   #3a1010;
+      --accent:   #dc2626;
+      --glow:     rgba(220,38,38,.25);
+      --text:     #f0e8e8;
+      --muted:    #7a5555;
+      --green:    #4ade80;
+      --yellow:   #facc15;
+      --blue:     #60a5fa;
+      --purple:   #a78bfa;
+      --sidebar-w: 260px;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    /* ── LAYOUT ── */
+    .layout { display: flex; min-height: 100vh; }
+
+    /* ── SIDEBAR ── */
+    .sidebar {
+      width: var(--sidebar-w);
+      min-width: var(--sidebar-w);
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      padding: 24px 0;
+      scrollbar-width: thin;
+    }
+
+    .sidebar-brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 0 20px 20px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 16px;
+    }
+
+    .sidebar-brand img {
+      width: 34px;
+      height: 34px;
+      border-radius: 8px;
+      border: 2px solid var(--accent);
+    }
+
+    .sidebar-brand-text { font-family: 'JetBrains Mono', monospace; font-weight: 700; color: var(--accent); font-size: 1rem; }
+    .sidebar-brand-sub  { font-size: 0.65rem; color: var(--muted); font-family: 'JetBrains Mono', monospace; }
+
+    .nav-section { padding: 0 12px 10px; }
+
+    .nav-label {
+      font-size: 0.65rem;
+      text-transform: uppercase;
+      letter-spacing: .1em;
+      color: var(--muted);
+      font-weight: 600;
+      padding: 0 8px 8px;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 10px;
+      border-radius: 8px;
+      font-size: 0.82rem;
+      color: var(--muted);
+      cursor: pointer;
+      text-decoration: none;
+      transition: background .15s, color .15s;
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .nav-item:hover { background: var(--card); color: var(--text); text-decoration: none; }
+    .nav-item.active { background: rgba(220,38,38,.1); color: var(--accent); border-left: 2px solid var(--accent); }
+
+    .method-tag {
+      font-size: 0.6rem;
+      font-weight: 700;
+      padding: 2px 5px;
+      border-radius: 4px;
+      font-family: 'JetBrains Mono', monospace;
+      flex-shrink: 0;
+    }
+    .tag-post { background: rgba(74,222,128,.15); color: var(--green); }
+    .tag-get  { background: rgba(96,165,250,.15); color: var(--blue); }
+
+    .back-link {
+      margin: 0 12px 0;
+      padding: 8px 10px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.78rem;
+      color: var(--muted);
+      font-family: 'JetBrains Mono', monospace;
+      border-radius: 8px;
+      transition: all .15s;
+    }
+    .back-link:hover { color: var(--accent); background: var(--card); text-decoration: none; }
+
+    /* ── MAIN CONTENT ── */
+    .main { flex: 1; padding: 48px 56px; max-width: 900px; }
+
+    /* Hero */
+    .hero {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 40px;
+      padding-bottom: 32px;
+      border-bottom: 1px solid var(--border);
+    }
+    .hero-icon { font-size: 2.5rem; }
+    .hero h1 {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 2rem;
+      font-weight: 700;
+      color: var(--accent);
+    }
+    .hero-sub  { color: var(--muted); font-size: 0.9rem; margin-top: 4px; }
+    .hero-badge {
+      margin-left: auto;
+      background: rgba(220,38,38,.12);
+      border: 1px solid rgba(220,38,38,.3);
+      color: var(--accent);
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-family: 'JetBrains Mono', monospace;
+      white-space: nowrap;
+    }
+
+    /* Sections */
+    .section { margin-bottom: 56px; scroll-margin-top: 24px; }
+
+    .section-title {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .section-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+    /* Base URL block */
+    .base-url {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px 20px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.9rem;
+      color: var(--green);
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .base-url-label { color: var(--muted); font-size: 0.75rem; margin-right: 4px; }
+
+    /* Endpoint card */
+    .endpoint {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      overflow: hidden;
+      margin-bottom: 24px;
+    }
+
+    .endpoint-header {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 16px 20px;
+      background: var(--card);
+      border-bottom: 1px solid var(--border);
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .method {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.78rem;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 6px;
+      flex-shrink: 0;
+    }
+    .method-post { background: rgba(74,222,128,.15); color: var(--green); border: 1px solid rgba(74,222,128,.3); }
+    .method-get  { background: rgba(96,165,250,.15); color: var(--blue);  border: 1px solid rgba(96,165,250,.3); }
+
+    .endpoint-path {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.95rem;
+      color: var(--text);
+      flex: 1;
+    }
+
+    .endpoint-summary { font-size: 0.82rem; color: var(--muted); }
+
+    .endpoint-body { padding: 20px; display: flex; flex-direction: column; gap: 18px; }
+
+    .field-label {
+      font-size: 0.7rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      color: var(--muted);
+      margin-bottom: 8px;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    /* Param table */
+    table { width: 100%; border-collapse: collapse; font-size: 0.84rem; }
+    th {
+      text-align: left;
+      padding: 8px 12px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.72rem;
+      font-weight: 600;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .05em;
+    }
+    td {
+      padding: 10px 12px;
+      border: 1px solid var(--border);
+      vertical-align: top;
+    }
+    tr:hover td { background: rgba(255,255,255,.015); }
+
+    .param-name  { font-family: 'JetBrains Mono', monospace; color: var(--yellow); font-size: 0.82rem; }
+    .param-type  { font-family: 'JetBrains Mono', monospace; color: var(--purple); font-size: 0.78rem; }
+    .param-req   { font-family: 'JetBrains Mono', monospace; color: var(--accent); font-size: 0.72rem; }
+    .param-opt   { font-family: 'JetBrains Mono', monospace; color: var(--muted);  font-size: 0.72rem; }
+    .param-desc  { color: var(--muted); font-size: 0.82rem; }
+
+    /* Code blocks */
+    .code-wrap {
+      position: relative;
+      background: #050000;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    .code-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 6px 14px;
+      background: #0d0000;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .code-lang-tag {
+      font-size: 0.68rem;
+      font-family: 'JetBrains Mono', monospace;
+      color: var(--accent);
+      text-transform: uppercase;
+      letter-spacing: .06em;
+    }
+
+    .copy-btn {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 5px;
+      color: var(--muted);
+      font-size: 0.68rem;
+      font-family: 'JetBrains Mono', monospace;
+      cursor: pointer;
+      padding: 2px 8px;
+      transition: all .15s;
+    }
+    .copy-btn:hover { color: var(--accent); border-color: var(--accent); }
+
+    pre { padding: 16px; overflow-x: auto; scrollbar-width: thin; }
+    code { font-family: 'JetBrains Mono', monospace; font-size: 0.82rem; line-height: 1.7; color: #f0c0c0; }
+
+    /* Tabs (language switcher) */
+    .tabs { display: flex; gap: 4px; margin-bottom: 12px; flex-wrap: wrap; }
+    .tab-btn {
+      padding: 5px 14px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--card);
+      color: var(--muted);
+      font-size: 0.75rem;
+      font-family: 'JetBrains Mono', monospace;
+      cursor: pointer;
+      transition: all .15s;
+    }
+    .tab-btn:hover  { border-color: var(--accent); color: var(--accent); }
+    .tab-btn.active { background: rgba(220,38,38,.12); border-color: var(--accent); color: var(--accent); }
+    .tab-pane       { display: none; }
+    .tab-pane.active { display: block; }
+
+    /* Response badges */
+    .responses { display: flex; flex-direction: column; gap: 10px; }
+    .response-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 12px 16px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+    }
+    .status-code {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.78rem;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 5px;
+      flex-shrink: 0;
+    }
+    .s200 { background: rgba(74,222,128,.15); color: var(--green);  border: 1px solid rgba(74,222,128,.3); }
+    .s400 { background: rgba(250,204,21,.15);  color: var(--yellow); border: 1px solid rgba(250,204,21,.3); }
+    .s404 { background: rgba(250,204,21,.15);  color: var(--yellow); border: 1px solid rgba(250,204,21,.3); }
+    .s500 { background: rgba(220,38,38,.15);   color: var(--accent); border: 1px solid rgba(220,38,38,.3); }
+
+    .response-desc { font-size: 0.82rem; color: var(--muted); }
+    .response-schema { font-family: 'JetBrains Mono', monospace; font-size: 0.78rem; color: var(--text); margin-top: 4px; }
+
+    /* Info box */
+    .info-box {
+      background: rgba(96,165,250,.07);
+      border: 1px solid rgba(96,165,250,.25);
+      border-radius: 10px;
+      padding: 14px 16px;
+      font-size: 0.84rem;
+      color: #a0c4ff;
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+    }
+    .info-box .icon { font-size: 1rem; flex-shrink: 0; }
+
+    /* Highlight spans in code */
+    .hl-key    { color: #f0c0c0; }
+    .hl-str    { color: #a5f3a0; }
+    .hl-num    { color: #fde68a; }
+    .hl-kw     { color: #c4b5fd; }
+    .hl-cmt    { color: #5a4a4a; }
+    .hl-fn     { color: #93c5fd; }
+
+    /* RESPONSIVE */
+    @media (max-width: 768px) {
+      .sidebar { display: none; }
+      .main { padding: 28px 20px; }
+      .hero { flex-wrap: wrap; }
+      .hero-badge { margin-left: 0; }
+      .endpoint-header { flex-wrap: wrap; gap: 8px; }
+    }
+  </style>
+</head>
+<body>
+<div class="layout">
+
+  <!-- ── SIDEBAR ── -->
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <img src="https://avatars.githubusercontent.com/u/172988251?s=200&v=4" alt="WormBot"/>
+      <div>
+        <div class="sidebar-brand-text">WormBot</div>
+        <div class="sidebar-brand-sub">API Reference v1.0</div>
+      </div>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-label">Overview</div>
+      <a href="#intro"    class="nav-item active">Introduction</a>
+      <a href="#baseurl"  class="nav-item">Base URL</a>
+      <a href="#auth"     class="nav-item">Authentication</a>
+      <a href="#errors"   class="nav-item">Error Handling</a>
+      <a href="#limits"   class="nav-item">Rate Limits</a>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-label">Advanced</div>
+      <a href="#persona"  class="nav-item">Custom Persona</a>
+      <a href="#integration" class="nav-item">Integrations</a>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-label">Endpoints</div>
+      <a href="#chat"     class="nav-item"><span class="method-tag tag-post">POST</span>/api/chat</a>
+      <a href="#genfile"  class="nav-item"><span class="method-tag tag-post">POST</span>/api/generate-file</a>
+      <a href="#download" class="nav-item"><span class="method-tag tag-get">GET</span>&nbsp;/files/:filename</a>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-label">Examples</div>
+      <a href="#ex-js"   class="nav-item">JavaScript / Fetch</a>
+      <a href="#ex-py"   class="nav-item">Python / requests</a>
+      <a href="#ex-curl" class="nav-item">cURL</a>
+    </div>
+
+    <a href="/" class="back-link">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+      Back to Chat
+    </a>
+  </aside>
+
+  <!-- ── MAIN ── -->
+  <main class="main">
+
+    <!-- Hero -->
+    <div class="hero" id="intro">
+      <div>
+        <h1>WormBot API</h1>
+        <div class="hero-sub">REST API reference for developers integrating WormBot into their apps.</div>
+      </div>
+      <span class="hero-badge">v1.0.0</span>
+    </div>
+
+    <!-- Intro -->
+    <section class="section">
+      <div class="section-title">Introduction</div>
+      <p style="color:var(--muted);font-size:.9rem;margin-bottom:16px;">
+        WormBot exposes a simple REST API that lets you send messages to the Gemini-powered chatbot, maintain multi-turn conversation history, and generate downloadable files from AI responses.
+        All request and response bodies use <strong style="color:var(--text)">JSON</strong>.
+      </p>
+      <div class="info-box">
+        <span class="icon">ℹ️</span>
+        <span>WormBot runs locally. There is no hosted cloud endpoint — you must run your own instance using <code style="font-family:'JetBrains Mono',monospace;color:var(--accent)">node server.js</code>.</span>
+      </div>
+    </section>
+
+    <!-- Base URL -->
+    <section class="section" id="baseurl">
+      <div class="section-title">Base URL</div>
+      <div class="base-url">
+        <span class="base-url-label">LOCAL</span>
+        http://localhost:3000
+      </div>
+      <p style="color:var(--muted);font-size:.85rem;">Change the port by setting <code style="font-family:'JetBrains Mono',monospace;color:var(--yellow)">PORT</code> in your <code style="font-family:'JetBrains Mono',monospace;color:var(--accent)">.env</code> file.</p>
+    </section>
+
+    <!-- Auth -->
+    <section class="section" id="auth">
+      <div class="section-title">Authentication</div>
+      <p style="color:var(--muted);font-size:.9rem;margin-bottom:12px;">
+        WormBot does not require API tokens for its own endpoints. Authentication is handled internally via the <code style="font-family:'JetBrains Mono',monospace;color:var(--yellow)">GEMINI_API_KEY</code> environment variable on the server side.
+      </p>
+      <div class="info-box">
+        <span class="icon">🔑</span>
+        <span>Get a free Gemini API key at <a href="https://aistudio.google.com/app/apikey" target="_blank">aistudio.google.com</a> and add it to your <code style="font-family:'JetBrains Mono',monospace;color:var(--accent)">.env</code> file.</span>
+      </div>
+    </section>
+
+    <!-- Errors -->
+    <section class="section" id="errors">
+      <div class="section-title">Error Handling</div>
+      <p style="color:var(--muted);font-size:.9rem;margin-bottom:16px;">All errors return a JSON body with an <code style="font-family:'JetBrains Mono',monospace;color:var(--yellow)">error</code> string field. HTTP status codes follow REST conventions.</p>
+      <div class="code-wrap">
+        <div class="code-top"><span class="code-lang-tag">JSON — Error Response</span></div>
+        <pre><code>{
+  <span class="hl-key">"error"</span>: <span class="hl-str">"Message is required."</span>
+}</code></pre>
+      </div>
+    </section>
+
+    <!-- Rate Limits -->
+    <section class="section" id="limits">
+      <div class="section-title">Rate Limits</div>
+      <p style="color:var(--muted);font-size:.9rem;margin-bottom:12px;">
+        WormBot uses Google's Gemini 2.0 Flash API.
+      </p>
+      <div class="info-box" style="margin-bottom: 12px; border-color: rgba(250,204,21,.3); background: rgba(250,204,21,.05); color: #fde68a;">
+        <span class="icon">⚠️</span>
+        <span>The free tier of Gemini AI Studio allows <strong>15 Requests per Minute (RPM)</strong> and <strong>1,500 Requests per Day (RPD)</strong>.</span>
+      </div>
+      <p style="color:var(--muted);font-size:.9rem;">
+        If you exceed this, the API will return a 500 error indicating quota exhaustion or rate-limiting. For heavy usage, attach billing in Google AI Studio to increase the rate limit.
+      </p>
+    </section>
+
+    <!-- Custom Persona -->
+    <section class="section" id="persona">
+      <div class="section-title">Customizing WormBot's Persona</div>
+      <p style="color:var(--muted);font-size:.9rem;margin-bottom:16px;">
+        WormBot's entire personality is controlled by a single System Prompt file. You can easily tweak how the bot talks to your users (or yourself).
+      </p>
+      <div class="code-wrap" style="margin-bottom: 16px;">
+        <div class="code-top"><span class="code-lang-tag">src/config/prompt.js</span></div>
+        <pre><code>module.exports = {
+  role: <span class="hl-str">"user"</span>,
+  content: <span class="hl-str">\`You are WormBot — a sharp, witty, and brutally honest AI...
+Your traits:
+- You speak plainly and get straight to the point.
+- You treat the user as an intelligent adult.
+...
+\`</span>
+};</code></pre>
+      </div>
+      <p style="color:var(--muted);font-size:.9rem;">Simply edit this file and restart the Node.js server to deploy the new persona.</p>
+    </section>
+
+    <!-- Integrations -->
+    <section class="section" id="integration">
+      <div class="section-title">Integrating into other Apps</div>
+      <p style="color:var(--muted);font-size:.9rem;margin-bottom:16px;">
+        Because WormBot exposes a simple <code style="font-family:'JetBrains Mono',monospace;color:var(--yellow)">REST POST /api/chat</code> endpoint, you can easily wire it up to Discord, Telegram, or any custom app.
+      </p>
+      <div class="info-box" style="margin-bottom: 16px;">
+        <span class="icon">💡</span>
+        <span><strong>Pro integration tip:</strong> Map the chat history of the external app (like a Discord or Telegram channel) into the <code style="font-family:'JetBrains Mono',monospace;color:var(--accent)">history</code> array of the payload for full conversational context!</span>
+      </div>
+
+      <div class="tabs">
+        <button class="tab-btn active" onclick="switchIntTab(event, 'int-discord')">Discord.js (Node)</button>
+        <button class="tab-btn"        onclick="switchIntTab(event, 'int-telegram')">Telegram (Python/requests)</button>
+        <button class="tab-btn"        onclick="switchIntTab(event, 'int-bash')">Bash Script (cURL)</button>
+      </div>
+
+      <!-- Discord.js -->
+      <div class="tab-pane active" id="int-discord">
+        <div class="code-wrap">
+          <div class="code-top"><span class="code-lang-tag">Discord.js Example snippet</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+          <pre><code>client.on(<span class="hl-str">'messageCreate'</span>, <span class="hl-kw">async</span> (msg) => {
+  <span class="hl-kw">if</span> (msg.author.bot) <span class="hl-kw">return</span>;
+  
+  <span class="hl-cmt">// Forward message to WormBot local server</span>
+  <span class="hl-kw">const</span> res = <span class="hl-kw">await</span> fetch(<span class="hl-str">'http://localhost:3000/api/chat'</span>, {
+    method: <span class="hl-str">'POST'</span>,
+    headers: { <span class="hl-str">'Content-Type'</span>: <span class="hl-str">'application/json'</span> },
+    body: JSON.stringify({ message: msg.content, history: [] })
+  });
+
+  <span class="hl-kw">const</span> data = <span class="hl-kw">await</span> res.json();
+  msg.reply(data.reply);
+});</code></pre>
+        </div>
+      </div>
+
+      <!-- Telegram Python -->
+      <div class="tab-pane" id="int-telegram">
+        <div class="code-wrap">
+          <div class="code-top"><span class="code-lang-tag">Telegram Bot API — Python / requests</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+          <pre><code><span class="hl-kw">import</span> requests
+
+<span class="hl-kw">def</span> <span class="hl-fn">handle_telegram_message</span>(user_msg, chat_id, bot_token):
+    <span class="hl-cmt"># 1. Send the user's message to WormBot API</span>
+    worm_res = requests.<span class="hl-fn">post</span>(<span class="hl-str">'http://localhost:3000/api/chat'</span>, json={
+        <span class="hl-str">"message"</span>: user_msg,
+        <span class="hl-str">"history"</span>: []
+    })
+    
+    <span class="hl-kw">if</span> worm_res.status_code == <span class="hl-num">200</span>:
+        reply_text = worm_res.<span class="hl-fn">json</span>().get(<span class="hl-str">'reply'</span>, <span class="hl-str">'Error'</span>)
+    <span class="hl-kw">else</span>:
+        reply_text = <span class="hl-str">"WormBot is offline or rate-limited."</span>
+        
+    <span class="hl-cmt"># 2. Send the AI's reply back to Telegram</span>
+    tg_url = <span class="hl-str">f"https://api.telegram.org/bot{bot_token}/sendMessage"</span>
+    requests.<span class="hl-fn">post</span>(tg_url, json={
+        <span class="hl-str">"chat_id"</span>: chat_id,
+        <span class="hl-str">"text"</span>: reply_text,
+        <span class="hl-str">"parse_mode"</span>: <span class="hl-str">"Markdown"</span>
+    })</code></pre>
+        </div>
+      </div>
+
+      <!-- Bash cURL -->
+      <div class="tab-pane" id="int-bash">
+        <div class="code-wrap">
+          <div class="code-top"><span class="code-lang-tag">Simple Terminal CLI Bot — cURL & jq</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+          <pre><code><span class="hl-cmt">#!/bin/bash</span>
+<span class="hl-kw">echo</span> <span class="hl-str">"🐛 WormBot CLI Terminal"</span>
+<span class="hl-kw">while true</span>; <span class="hl-kw">do</span>
+  <span class="hl-kw">read</span> -p <span class="hl-str">"You: "</span> msg
+  <span class="hl-kw">if</span> [ -z <span class="hl-str">"$msg"</span> ]; <span class="hl-kw">then continue; fi</span>
+  
+  <span class="hl-cmt"># Ask WormBot and extract "reply" using jq</span>
+  reply=<span class="hl-kw">$(</span>curl -s -X POST http://localhost:3000/api/chat \
+    -H <span class="hl-str">"Content-Type: application/json"</span> \
+    -d <span class="hl-str">"{\"message\":\"$msg\",\"history\":[]}"</span> | jq -r .reply<span class="hl-kw">)</span>
+    
+  <span class="hl-kw">echo</span> -e <span class="hl-str">"Bot: $reply"</span>
+<span class="hl-kw">done</span></code></pre>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════ POST /api/chat ══════════ -->
+    <section class="section" id="chat">
+      <div class="section-title">POST &nbsp;/api/chat</div>
+
+      <div class="endpoint">
+        <div class="endpoint-header">
+          <span class="method method-post">POST</span>
+          <span class="endpoint-path">/api/chat</span>
+          <span class="endpoint-summary">Send a message and receive a WormBot reply</span>
+        </div>
+        <div class="endpoint-body">
+
+          <div>
+            <div class="field-label">Request Body</div>
+            <table>
+              <thead><tr><th>Field</th><th>Type</th><th>Required</th><th>Description</th></tr></thead>
+              <tbody>
+                <tr>
+                  <td><span class="param-name">message</span></td>
+                  <td><span class="param-type">string</span></td>
+                  <td><span class="param-req">Required</span></td>
+                  <td class="param-desc">The user's message to send to WormBot.</td>
+                </tr>
+                <tr>
+                  <td><span class="param-name">history</span></td>
+                  <td><span class="param-type">array</span></td>
+                  <td><span class="param-opt">Optional</span></td>
+                  <td class="param-desc">Array of previous messages for multi-turn context. Each item: <code style="font-family:'JetBrains Mono',monospace;color:var(--yellow)">{ role, content }</code></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div>
+            <div class="field-label">History Entry Schema</div>
+            <table>
+              <thead><tr><th>Field</th><th>Type</th><th>Values</th></tr></thead>
+              <tbody>
+                <tr>
+                  <td><span class="param-name">role</span></td>
+                  <td><span class="param-type">string</span></td>
+                  <td class="param-desc"><code style="font-family:'JetBrains Mono',monospace;color:var(--green)">"user"</code> or <code style="font-family:'JetBrains Mono',monospace;color:var(--green)">"model"</code></td>
+                </tr>
+                <tr>
+                  <td><span class="param-name">content</span></td>
+                  <td><span class="param-type">string</span></td>
+                  <td class="param-desc">The message text for this turn.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div>
+            <div class="field-label">Request Example</div>
+            <div class="code-wrap">
+              <div class="code-top"><span class="code-lang-tag">JSON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+              <pre><code>{
+  <span class="hl-key">"message"</span>: <span class="hl-str">"Write a Python hello world script"</span>,
+  <span class="hl-key">"history"</span>: [
+    { <span class="hl-key">"role"</span>: <span class="hl-str">"user"</span>,  <span class="hl-key">"content"</span>: <span class="hl-str">"What languages do you know?"</span> },
+    { <span class="hl-key">"role"</span>: <span class="hl-str">"model"</span>, <span class="hl-key">"content"</span>: <span class="hl-str">"All of them."</span> }
+  ]
+}</code></pre>
+            </div>
+          </div>
+
+          <div>
+            <div class="field-label">Success Response — 200</div>
+            <div class="code-wrap">
+              <div class="code-top"><span class="code-lang-tag">JSON</span></div>
+              <pre><code>{
+  <span class="hl-key">"reply"</span>: <span class="hl-str">"Here's a Python hello world:\n\n```python\nprint('Hello, world!')\n```"</span>
+}</code></pre>
+            </div>
+          </div>
+
+          <div>
+            <div class="field-label">Responses</div>
+            <div class="responses">
+              <div class="response-item">
+                <span class="status-code s200">200</span>
+                <div><div class="response-desc">Successful reply from WormBot.</div><div class="response-schema">{ reply: string }</div></div>
+              </div>
+              <div class="response-item">
+                <span class="status-code s400">400</span>
+                <div><div class="response-desc">Missing or empty <code style="font-family:'JetBrains Mono',monospace">message</code> field.</div><div class="response-schema">{ error: string }</div></div>
+              </div>
+              <div class="response-item">
+                <span class="status-code s500">500</span>
+                <div><div class="response-desc">Gemini API error (bad key, quota, etc).</div><div class="response-schema">{ error: string }</div></div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════ POST /api/generate-file ══════════ -->
+    <section class="section" id="genfile">
+      <div class="section-title">POST &nbsp;/api/generate-file</div>
+
+      <div class="endpoint">
+        <div class="endpoint-header">
+          <span class="method method-post">POST</span>
+          <span class="endpoint-path">/api/generate-file</span>
+          <span class="endpoint-summary">Save text content as a downloadable file</span>
+        </div>
+        <div class="endpoint-body">
+
+          <div>
+            <div class="field-label">Request Body</div>
+            <table>
+              <thead><tr><th>Field</th><th>Type</th><th>Required</th><th>Description</th></tr></thead>
+              <tbody>
+                <tr>
+                  <td><span class="param-name">filename</span></td>
+                  <td><span class="param-type">string</span></td>
+                  <td><span class="param-req">Required</span></td>
+                  <td class="param-desc">Desired filename including extension (e.g. <code style="font-family:'JetBrains Mono',monospace;color:var(--yellow)">script.py</code>). Special characters are sanitized.</td>
+                </tr>
+                <tr>
+                  <td><span class="param-name">content</span></td>
+                  <td><span class="param-type">string</span></td>
+                  <td><span class="param-req">Required</span></td>
+                  <td class="param-desc">The file content to save (plain text, code, etc.).</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div>
+            <div class="field-label">Request Example</div>
+            <div class="code-wrap">
+              <div class="code-top"><span class="code-lang-tag">JSON</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+              <pre><code>{
+  <span class="hl-key">"filename"</span>: <span class="hl-str">"hello.py"</span>,
+  <span class="hl-key">"content"</span>: <span class="hl-str">"print('Hello, world!')"</span>
+}</code></pre>
+            </div>
+          </div>
+
+          <div>
+            <div class="field-label">Success Response — 200</div>
+            <div class="code-wrap">
+              <div class="code-top"><span class="code-lang-tag">JSON</span></div>
+              <pre><code>{
+  <span class="hl-key">"ok"</span>:          <span class="hl-kw">true</span>,
+  <span class="hl-key">"filename"</span>:    <span class="hl-str">"hello.py"</span>,
+  <span class="hl-key">"downloadUrl"</span>: <span class="hl-str">"/files/hello.py"</span>
+}</code></pre>
+            </div>
+          </div>
+
+          <div>
+            <div class="field-label">Responses</div>
+            <div class="responses">
+              <div class="response-item"><span class="status-code s200">200</span><div><div class="response-desc">File saved. Use <code style="font-family:'JetBrains Mono',monospace">downloadUrl</code> to download.</div><div class="response-schema">{ ok: true, filename: string, downloadUrl: string }</div></div></div>
+              <div class="response-item"><span class="status-code s400">400</span><div><div class="response-desc">Missing <code style="font-family:'JetBrains Mono',monospace">filename</code> or <code style="font-family:'JetBrains Mono',monospace">content</code>.</div><div class="response-schema">{ error: string }</div></div></div>
+              <div class="response-item"><span class="status-code s500">500</span><div><div class="response-desc">Could not write file to disk.</div><div class="response-schema">{ error: string }</div></div></div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════ GET /files/:filename ══════════ -->
+    <section class="section" id="download">
+      <div class="section-title">GET &nbsp;/files/:filename</div>
+
+      <div class="endpoint">
+        <div class="endpoint-header">
+          <span class="method method-get">GET</span>
+          <span class="endpoint-path">/files/<span style="color:var(--yellow)">:filename</span></span>
+          <span class="endpoint-summary">Download a previously generated file</span>
+        </div>
+        <div class="endpoint-body">
+
+          <div>
+            <div class="field-label">Path Parameters</div>
+            <table>
+              <thead><tr><th>Param</th><th>Type</th><th>Description</th></tr></thead>
+              <tbody>
+                <tr>
+                  <td><span class="param-name">filename</span></td>
+                  <td><span class="param-type">string</span></td>
+                  <td class="param-desc">The filename returned by <code style="font-family:'JetBrains Mono',monospace;color:var(--yellow)">/api/generate-file</code>.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div>
+            <div class="field-label">Example Request</div>
+            <div class="code-wrap">
+              <div class="code-top"><span class="code-lang-tag">HTTP</span></div>
+              <pre><code><span class="hl-kw">GET</span> /files/hello.py HTTP/1.1
+<span class="hl-key">Host:</span> localhost:3000</code></pre>
+            </div>
+          </div>
+
+          <div>
+            <div class="field-label">Responses</div>
+            <div class="responses">
+              <div class="response-item"><span class="status-code s200">200</span><div><div class="response-desc">File stream returned with <code style="font-family:'JetBrains Mono',monospace">Content-Disposition: attachment</code>.</div></div></div>
+              <div class="response-item"><span class="status-code s404">404</span><div><div class="response-desc">File not found on server.</div><div class="response-schema">{ error: string }</div></div></div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════ EXAMPLES ══════════ -->
+    <section class="section" id="ex-js">
+      <div class="section-title">Code Examples</div>
+
+      <div class="tabs">
+        <button class="tab-btn active" onclick="switchTab(event, 'tab-js')">JavaScript</button>
+        <button class="tab-btn"        onclick="switchTab(event, 'tab-py')">Python</button>
+        <button class="tab-btn"        onclick="switchTab(event, 'tab-curl')">cURL</button>
+      </div>
+
+      <!-- JS -->
+      <div class="tab-pane active" id="tab-js">
+        <div class="code-wrap">
+          <div class="code-top"><span class="code-lang-tag">JavaScript — Fetch</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+          <pre><code><span class="hl-cmt">// Basic chat request</span>
+<span class="hl-kw">const</span> response = <span class="hl-kw">await</span> <span class="hl-fn">fetch</span>(<span class="hl-str">'http://localhost:3000/api/chat'</span>, {
+  method: <span class="hl-str">'POST'</span>,
+  headers: { <span class="hl-str">'Content-Type'</span>: <span class="hl-str">'application/json'</span> },
+  body: <span class="hl-fn">JSON.stringify</span>({
+    message: <span class="hl-str">'Write a bubble sort in Python'</span>,
+    history: []   <span class="hl-cmt">// pass previous turns for context</span>
+  })
+});
+
+<span class="hl-kw">const</span> { reply } = <span class="hl-kw">await</span> response.<span class="hl-fn">json</span>();
+console.<span class="hl-fn">log</span>(reply);
+
+<span class="hl-cmt">// Generate and download a file</span>
+<span class="hl-kw">const</span> fileRes = <span class="hl-kw">await</span> <span class="hl-fn">fetch</span>(<span class="hl-str">'http://localhost:3000/api/generate-file'</span>, {
+  method: <span class="hl-str">'POST'</span>,
+  headers: { <span class="hl-str">'Content-Type'</span>: <span class="hl-str">'application/json'</span> },
+  body: <span class="hl-fn">JSON.stringify</span>({
+    filename: <span class="hl-str">'bubble_sort.py'</span>,
+    content:  reply
+  })
+});
+
+<span class="hl-kw">const</span> { downloadUrl } = <span class="hl-kw">await</span> fileRes.<span class="hl-fn">json</span>();
+window.<span class="hl-fn">open</span>(<span class="hl-str">`http://localhost:3000${downloadUrl}`</span>);</code></pre>
+        </div>
+      </div>
+
+      <!-- Python -->
+      <div class="tab-pane" id="tab-py">
+        <div class="code-wrap">
+          <div class="code-top"><span class="code-lang-tag">Python — requests</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+          <pre><code><span class="hl-kw">import</span> requests
+
+BASE = <span class="hl-str">"http://localhost:3000"</span>
+
+<span class="hl-cmt"># Send a chat message</span>
+res = requests.<span class="hl-fn">post</span>(f<span class="hl-str">"{BASE}/api/chat"</span>, json={
+    <span class="hl-str">"message"</span>: <span class="hl-str">"Explain recursion in Python"</span>,
+    <span class="hl-str">"history"</span>: []
+})
+reply = res.<span class="hl-fn">json</span>()[<span class="hl-str">"reply"</span>]
+<span class="hl-fn">print</span>(reply)
+
+<span class="hl-cmt"># Save generated content as a file</span>
+file_res = requests.<span class="hl-fn">post</span>(f<span class="hl-str">"{BASE}/api/generate-file"</span>, json={
+    <span class="hl-str">"filename"</span>: <span class="hl-str">"output.py"</span>,
+    <span class="hl-str">"content"</span>:  reply
+})
+data = file_res.<span class="hl-fn">json</span>()
+<span class="hl-fn">print</span>(<span class="hl-str">f"Download at: {BASE}{data['downloadUrl']}"</span>)
+
+<span class="hl-cmt"># Download the file directly</span>
+dl = requests.<span class="hl-fn">get</span>(f<span class="hl-str">"{BASE}{data['downloadUrl']}"</span>)
+<span class="hl-kw">with open</span>(<span class="hl-str">"output.py"</span>, <span class="hl-str">"wb"</span>) <span class="hl-kw">as</span> f:
+    f.<span class="hl-fn">write</span>(dl.content)
+<span class="hl-fn">print</span>(<span class="hl-str">"File saved!"</span>)</code></pre>
+        </div>
+      </div>
+
+      <!-- cURL -->
+      <div class="tab-pane" id="tab-curl">
+        <div class="code-wrap">
+          <div class="code-top"><span class="code-lang-tag">cURL</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+          <pre><code><span class="hl-cmt"># Chat request</span>
+curl -X POST http://localhost:3000/api/chat \
+  -H <span class="hl-str">"Content-Type: application/json"</span> \
+  -d <span class="hl-str">'{"message":"Hello WormBot!","history":[]}'</span>
+
+<span class="hl-cmt"># Generate a file</span>
+curl -X POST http://localhost:3000/api/generate-file \
+  -H <span class="hl-str">"Content-Type: application/json"</span> \
+  -d <span class="hl-str">'{"filename":"hello.txt","content":"Hello from WormBot!"}'</span>
+
+<span class="hl-cmt"># Download a file</span>
+curl -O http://localhost:3000/files/hello.txt</code></pre>
+        </div>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <div style="border-top:1px solid var(--border);padding-top:24px;display:flex;align-items:center;justify-content:space-between;color:var(--muted);font-size:.78rem;font-family:'JetBrains Mono',monospace;flex-wrap:wrap;gap:10px;">
+      <span>WormBot API Docs — v1.0.0</span>
+      <a href="https://github.com/blaxkmiradev" target="_blank" style="color:var(--muted);display:flex;align-items:center;gap:6px;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
+        Made by RIkixz
+      </a>
+    </div>
+
+  </main>
+</div>
+
+<script>
+  // Setup tabs for Intro/Endpoints examples
+  function switchTab(e, id) {
+    const parent = e.target.closest('.section');
+    parent.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    parent.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+    e.target.classList.add('active');
+    document.getElementById(id).classList.add('active');
+  }
+
+  // Setup tabs for Integrations examples
+  function switchIntTab(e, id) {
+    const parent = e.target.closest('.section');
+    parent.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    parent.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+    e.target.classList.add('active');
+    document.getElementById(id).classList.add('active');
+  }
+
+  // Copy code button
+  function copyCode(btn) {
+    const pre = btn.closest('.code-wrap').querySelector('pre');
+    navigator.clipboard.writeText(pre.innerText).then(() => {
+      btn.textContent = 'Copied!';
+      setTimeout(() => btn.textContent = 'Copy', 1800);
+    });
+  }
+
+  // Active nav highlight on scroll
+  const sections = document.querySelectorAll('.section');
+  const navItems = document.querySelectorAll('.nav-item');
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        navItems.forEach(n => n.classList.remove('active'));
+        const link = document.querySelector(`.nav-item[href="#${e.target.id}"]`);
+        if (link) link.classList.add('active');
+      }
+    });
+  }, { threshold: 0.4 });
+  sections.forEach(s => observer.observe(s));
+</script>
+</body>
+</html>

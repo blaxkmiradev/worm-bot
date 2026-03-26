@@ -250,6 +250,23 @@ html, body {
   white-space: nowrap;
 }
 
+.docs-link {
+  margin-left: auto;
+  font-size: 0.75rem;
+  font-family: 'JetBrains Mono', monospace;
+  color: var(--text-muted);
+  text-decoration: none;
+  border: 1px solid var(--border);
+  padding: 4px 10px;
+  border-radius: 6px;
+  transition: all 0.2s;
+}
+.docs-link:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+  background: rgba(220, 38, 38, 0.05);
+}
+
 /* ═══════════════════════════════════════════════
    MESSAGES
 ═══════════════════════════════════════════════ */
