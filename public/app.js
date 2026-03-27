@@ -3,6 +3,10 @@ const inputEl    = document.getElementById("userInput");
 const sendBtn    = document.getElementById("sendBtn");
 const newChatBtn = document.getElementById("newChatBtn");
 const historyEl  = document.getElementById("chatHistory");
+const attachBtn  = document.getElementById("attachBtn");
+const fileInput  = document.getElementById("fileInput");
+const filePreview= document.getElementById("filePreview");
+const modelSelect= document.getElementById("modelSelect");
 
 const LOGO_URL = "https://avatars.githubusercontent.com/u/172988251?s=200&v=4";
 
@@ -10,6 +14,7 @@ let chatHistory  = [];          // current chat [{role, content}]
 let sessions     = [];          // [{label, history}]
 let activeIdx    = -1;          // index of loaded session (-1 = new)
 let isLoading    = false;
+let selectedFiles = [];         // currently selected files for upload
 
 // ── Comprehensive language → extension map ────────────────────────────────────
 const EXT_MAP = {
@@ -77,6 +82,51 @@ inputEl.addEventListener("keydown", (e) => {
 });
 sendBtn.addEventListener("click", sendMessage);
 newChatBtn.addEventListener("click", startNewChat);
+
+// ── File attachments ──────────────────────────────────────────────────────────
+attachBtn.addEventListener("click", () => fileInput.click());
+
+fileInput.addEventListener("change", (e) => {
+  const files = Array.from(e.target.files);
+  files.forEach(file => {
+    if (!selectedFiles.find(f => f.name === file.name && f.size === file.size)) {
+      selectedFiles.push(file);
+    }
+  });
+  renderFilePreview();
+  fileInput.value = "";
+});
+
+function renderFilePreview() {
+  filePreview.innerHTML = "";
+  selectedFiles.forEach((file, idx) => {
+    const item = document.createElement("div");
+    item.className = "preview-item";
+    
+    if (file.type.startsWith("image/")) {
+      const img = document.createElement("img");
+      img.src = URL.createObjectURL(file);
+      item.appendChild(img);
+    } else {
+      const icon = document.createElement("div");
+      icon.className = "file-icon";
+      const ext = file.name.split('.').pop().substring(0, 4);
+      icon.textContent = ext;
+      item.appendChild(icon);
+    }
+    
+    const rmBtn = document.createElement("button");
+    rmBtn.className = "preview-remove";
+    rmBtn.innerHTML = "&times;";
+    rmBtn.title = "Remove file";
+    rmBtn.onclick = () => {
+      selectedFiles.splice(idx, 1);
+      renderFilePreview();
+    };
+    item.appendChild(rmBtn);
+    filePreview.appendChild(item);
+  });
+}
 
 // ── About modal ───────────────────────────────────────────────────────────────
 const aboutModal  = document.getElementById("aboutModal");
@@ -229,7 +279,26 @@ function renderMessage(text) {
     } else if (part.trim()) {
       const p = document.createElement("p");
       p.className = "text-part";
-      p.textContent = part;
+      
+      let safeStr = part.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+      const mdImageRegex = /!\[([^\]]*)\]\(([^)]+)\)/g;
+      let hasImage = false;
+      
+      safeStr = safeStr.replace(mdImageRegex, (match, alt, url) => {
+        // Only allow valid image schemes
+        if (url.startsWith("http") || url.startsWith("data:image")) {
+          hasImage = true;
+          return `<img src="${url}" alt="${alt}" style="max-width: 100%; border-radius: 8px; margin-top: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.5);" />`;
+        }
+        return match;
+      });
+      
+      if (hasImage) {
+        // preserve newlines without sacrificing safety
+        p.innerHTML = safeStr.replace(/\n/g, "<br>");
+      } else {
+        p.textContent = part;
+      }
       frag.appendChild(p);
     }
   });
@@ -246,6 +315,7 @@ function saveFile(lang, ext, code, btn) {
     const a    = document.createElement("a");
     a.href     = url;
     a.download = filename;
+    a.style.display = "none";
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -327,22 +397,39 @@ function scrollBottom() { messagesEl.scrollTop = messagesEl.scrollHeight; }
 // ── Send message ──────────────────────────────────────────────────────────────
 async function sendMessage() {
   const text = inputEl.value.trim();
-  if (!text || isLoading) return;
+  if (!text && selectedFiles.length === 0 || isLoading) return;
 
   isLoading = true;
   sendBtn.disabled = true;
 
-  appendMessage("user", text);
-  chatHistory.push({ role: "user", content: text });
+  // Add user message to UI visually
+  let displayMsg = text || "";
+  if (selectedFiles.length > 0) {
+    const fileNames = selectedFiles.map(f => f.name).join(", ");
+    displayMsg += (displayMsg ? "\n\n" : "") + `[Attached: ${fileNames}]`;
+  }
+  appendMessage("user", displayMsg);
+
+  // History payload logic
+  const payloadText = text + (selectedFiles.length ? `\n\n[User attached files]` : "");
+  chatHistory.push({ role: "user", content: payloadText });
+
+  const formData = new FormData();
+  formData.append("message", text || "Please examine the attached files.");
+  formData.append("history", JSON.stringify(chatHistory.slice(0, -1)));
+  if (modelSelect) formData.append("modelId", modelSelect.value);
+  selectedFiles.forEach(file => formData.append("files", file));
+
   inputEl.value = "";
   inputEl.style.height = "auto";
+  selectedFiles = [];
+  renderFilePreview();
 
   const typingEl = appendTyping();
   try {
     const res = await fetch("/api/chat", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ message: text, history: chatHistory.slice(0, -1) }),
+      body: formData, // the browser sets correct form-data boundary
     });
     const data = await res.json();
     typingEl.remove();

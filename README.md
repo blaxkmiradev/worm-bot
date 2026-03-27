@@ -2,13 +2,13 @@
 
 <img src="https://avatars.githubusercontent.com/u/172988251?s=200&v=4" width="100" style="border-radius:16px"/>
 
-#  WormBot
+# 🐛 WormBot v2.0
 
-**A sharp, direct AI chatbot powered by Google Gemini**  
+**A sharp, direct AI chatbot powered by Google Gemini Models**  
 Built with Node.js · Express · Vanilla JS
 
 [![Node.js](https://img.shields.io/badge/Node.js-18+-339933?style=flat-square&logo=node.js&logoColor=white)](https://nodejs.org)
-[![Gemini](https://img.shields.io/badge/Gemini-2.0--flash-4285F4?style=flat-square&logo=google&logoColor=white)](https://ai.google.dev)
+[![Gemini](https://img.shields.io/badge/Gemini-All_Models-4285F4?style=flat-square&logo=google&logoColor=white)](https://ai.google.dev)
 [![License](https://img.shields.io/badge/License-MIT-dc2626?style=flat-square)](LICENSE)
 [![Made by](https://img.shields.io/badge/Made%20by-RIkixz-dc2626?style=flat-square&logo=github)](https://github.com/blaxkmiradev)
 
